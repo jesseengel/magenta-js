@@ -16,6 +16,7 @@
  */
 
 import * as mm from '../src/index';
+import {blobToNoteSequence, urlToNoteSequence} from '../src/index';
 
 import {FULL_TWINKLE_UNQUANTIZED} from './common';
 
@@ -24,13 +25,7 @@ const MIDI_URL = './melody.mid';
 let visualizer: mm.Visualizer;
 const player = new mm.Player(false, {
   run: (note: mm.NoteSequence.Note) => {
-    const currentNotePosition = visualizer.redraw(note);
-
-    // See if we need to scroll the container.
-    const containerWidth = container.getBoundingClientRect().width;
-    if (currentNotePosition > (container.scrollLeft + containerWidth)) {
-      container.scrollLeft = currentNotePosition - 20;
-    }
+    visualizer.redraw(note, true);
   },
   stop: () => {}
 });
@@ -42,7 +37,6 @@ const seqBtn = document.getElementById('seqBtn') as HTMLButtonElement;
 const tempoInput = document.getElementById('tempoInput') as HTMLInputElement;
 const tempoValue = document.getElementById('tempoValue') as HTMLDivElement;
 const fileInput = document.getElementById('fileInput') as HTMLInputElement;
-const container = document.getElementById('container') as HTMLDivElement;
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 
 // Set up some event listeners
@@ -58,22 +52,13 @@ tempoInput.addEventListener('input', () => {
 });
 
 function fetchMidi(url: string) {
-  fetch(url)
-      .then((response) => {
-        return response.blob();
-      })
-      .then(parseMidiBlob)
-      .catch((error) => {
-        console.log('Well, something went wrong somewhere.', error.message);
-      });
+  urlToNoteSequence(url).then((seq) => initPlayerAndVisualizer(seq));
 }
 
-function parseMidiBlob(blob: Blob) {
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    initPlayerAndVisualizer(mm.midiToSequenceProto(e.target.result));
-  };
-  reader.readAsBinaryString(blob);
+// tslint:disable-next-line:no-any
+function loadFile(e: any) {
+  blobToNoteSequence(e.target.files[0])
+      .then((seq) => initPlayerAndVisualizer(seq));
 }
 
 function initPlayerAndVisualizer(seq: mm.INoteSequence) {
@@ -90,13 +75,6 @@ function initPlayerAndVisualizer(seq: mm.INoteSequence) {
   // Enable the UI
   playBtn.disabled = false;
   playBtn.textContent = 'Play';
-}
-
-// tslint:disable-next-line:no-any
-function loadFile(e: any) {
-  const file = e.target.files[0];
-  parseMidiBlob(file);
-  return false;
 }
 
 function startOrStop() {
