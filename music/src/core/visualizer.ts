@@ -55,6 +55,7 @@ export class Visualizer {
   private height: number;
   public noteSequence: INoteSequence;
   private sequenceIsQuantized: boolean;
+  private parentElement: HTMLElement;
 
   /**
    *   `Visualizer` constructor.
@@ -65,7 +66,7 @@ export class Visualizer {
    */
   constructor(
       sequence: INoteSequence, canvas: HTMLCanvasElement,
-      config = {} as VisualizerConfig) {
+      config: VisualizerConfig = {}) {
     this.config = {
       noteHeight: config.noteHeight || 6,
       noteSpacing: config.noteSpacing || 1,
@@ -81,6 +82,7 @@ export class Visualizer {
 
     // Initialize the canvas.
     this.ctx = canvas.getContext('2d');
+    this.parentElement = canvas.parentElement;
 
     // Resize the canvas to fit the range of pitches in the note sequence.
     // NOTE: In the future this could be changed to fit all pitches, whether
@@ -111,17 +113,21 @@ export class Visualizer {
    * active
    * @param activeNote (Optional) If specified, this `Note` will be painted
    * in the active color.
+   * @param scrollIntoView (Optional) If specified and the note being painted is
+   * offscreen, the parent container will be scrolled so that the note is
+   * in view.
    * @returns The x position of the painted active note. Useful for
    * automatically advancing the visualization if the note was painted outside
    * of the screen.
    */
-  redraw(activeNote?: NoteSequence.INote): number {
+  redraw(activeNote?: NoteSequence.INote, scrollIntoView?: boolean): number {
     // TODO: this is not super optimal, and might start being too slow for
     // larger sequences. Instead, we should figure out a way to store the
     // "last painted active notes" and repaint those, as well as the new
     // active notes instead.
     this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
     let activeNotePosition;
+    const noteRenderHeight = Math.round(this.config.noteHeight);
 
     for (let i = 0; i < this.noteSequence.notes.length; i++) {
       const note = this.noteSequence.notes[i];
@@ -147,11 +153,23 @@ export class Visualizer {
       this.ctx.fillStyle =
           `rgba(${isActive ? this.config.activeNoteRGB : this.config.noteRGB},
           ${opacity})`;
-      this.ctx.fillRect(x, y, w, this.config.noteHeight);
+      // Round values to the nearest integer to avoid partially filled pixels.
+      this.ctx.fillRect(Math.round(x), Math.round(y), Math.round(w),
+          noteRenderHeight);
       if (isActive) {
         activeNotePosition = x;
       }
     }
+
+    if (scrollIntoView) {
+      // See if we need to scroll the container.
+      const containerWidth = this.parentElement.getBoundingClientRect().width;
+      if (activeNotePosition >
+          (this.parentElement.scrollLeft + containerWidth)) {
+        this.parentElement.scrollLeft = activeNotePosition - 20;
+      }
+    }
+
     return activeNotePosition;
   }
 

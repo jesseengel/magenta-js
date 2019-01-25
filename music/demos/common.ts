@@ -25,7 +25,7 @@ export const CHECKPOINTS_DIR =
 
 // Samples from Shan's SGM SoundFont:
 // http://www.polyphone-soundfonts.com/en/files/27-instrument-sets/256-sgm-v2-01
-const SOUNDFONT_URL =
+export const SOUNDFONT_URL =
     // tslint:disable-next-line:max-line-length
     'https://storage.googleapis.com/magentadata/js/soundfonts/sgm_plus';
 
@@ -40,7 +40,7 @@ export const DRUM_SEQS: mm.INoteSequence[] = [
       {pitch: 36, quantizedStartStep: 28}, {pitch: 42, quantizedStartStep: 30}
     ],
     quantizationInfo: {stepsPerQuarter: 4},
-    totalQuantizedSteps: 30,
+    totalQuantizedSteps: 32,
   },
   {
     notes: [
@@ -71,7 +71,7 @@ export const DRUM_SEQS: mm.INoteSequence[] = [
       {pitch: 42, quantizedStartStep: 30}, {pitch: 48, quantizedStartStep: 30}
     ],
     quantizationInfo: {stepsPerQuarter: 4},
-    totalQuantizedSteps: 30
+    totalQuantizedSteps: 32,
   },
   {
     notes: [
@@ -95,13 +95,14 @@ export const DRUM_SEQS: mm.INoteSequence[] = [
       {pitch: 45, quantizedStartStep: 30}
     ],
     quantizationInfo: {stepsPerQuarter: 4},
-    totalQuantizedSteps: 30,
+    totalQuantizedSteps: 32,
   },
   {
     notes: [
       {pitch: 50, quantizedStartStep: 4}, {pitch: 50, quantizedStartStep: 20}
     ],
-    quantizationInfo: {stepsPerQuarter: 4}
+    quantizationInfo: {stepsPerQuarter: 4},
+    totalQuantizedSteps: 32,
   }
 ];
 DRUM_SEQS.map(s => s.notes.map(n => {
